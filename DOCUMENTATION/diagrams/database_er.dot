@@ -1,0 +1,22 @@
+digraph er {
+  graph [rankdir=LR, bgcolor="white", pad=0.2, nodesep=0.42, ranksep=0.85, fontname="Arial", label="CM Kerala | Database ER Overview", labelloc=t, fontsize=23, fontcolor="#164e3c", splines=polyline];
+  node [shape=record, style="rounded,filled", color="#91b8a3", fillcolor="#eff8f2", fontname="Arial", fontsize=10, fontcolor="#163f31"];
+  edge [color="#689b83", arrowsize=.6, fontsize=9, fontname="Arial", fontcolor="#5d7867"];
+  users [label="{USERS|PK id\lUQ email\lname, mobile\lrole\lFK department_id\lpassword_hash\l}"];
+  departments [label="{DEPARTMENTS|PK id\lUQ name\ldescription\l}"];
+  grievances [label="{GRIEVANCES|PK id\lUQ reference_no\lFK citizen_id\lFK department_id\lFK officer_id\ldistrict, category\lstatus, priority\ldue_at, ai_*\l}",fillcolor="#d4eedf"];
+  grievance_history [label="{GRIEVANCE_HISTORY|PK id\lFK grievance_id\lFK actor_id\lold_status, new_status\laction, remark\lis_public, created_at\l}"];
+  department_assignments [label="{DEPARTMENT_ASSIGNMENTS|PK id\lFK grievance_id\lFK department_id\lFK officer_id\lFK assigned_by\lassigned_at\l}"];
+  attachments [label="{ATTACHMENTS|PK id\lFK grievance_id\lFK uploaded_by\lfilename, mime, size\lBYTEA data\l}"];
+  action_reports [label="{ACTION_REPORTS|PK id\lFK grievance_id\lFK officer_id\lfindings, action_taken\lreview_status\lreviewed_by, reviewed_at\l}"];
+  citizen_feedback [label="{CITIZEN_FEEDBACK|PK id\lFK grievance_id\lFK citizen_id\lrating, comment\l}"];
+  contact_enquiries [label="{CONTACT_ENQUIRIES|PK id\lname, email\lsubject, message\l}"];
+  departments -> users [label="1:N"];
+  users -> grievances [label="citizen 1:N"];
+  departments -> grievances [label="assigned department 1:N"];
+  grievances -> grievance_history [label="1:N"];
+  grievances -> department_assignments [label="1:N"];
+  grievances -> attachments [label="1:N"];
+  grievances -> action_reports [label="1:N"];
+  grievances -> citizen_feedback [label="1:N"];
+}
