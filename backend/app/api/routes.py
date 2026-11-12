@@ -8,6 +8,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session, selectinload
 from app.core.config import get_settings
+from app.core.ratelimit import rate_limit
 from app.core.security import current_user, require_roles, hash_password, verify_password, create_token
 from app.db.session import get_db
 from app.models.entities import (
@@ -45,7 +46,7 @@ def health():
     return {'status': 'ok', 'service': 'CM Kerala recruitment prototype'}
 
 
-@router.post('/auth/register', status_code=201)
+@router.post('/auth/register', status_code=201, dependencies=[Depends(rate_limit('register', 5))])
 def register(body: RegisterIn, db: Session = Depends(get_db)):
     if db.scalar(select(User).where(User.email == body.email.lower())):
         raise HTTPException(409, 'Email already registered')
@@ -56,7 +57,7 @@ def register(body: RegisterIn, db: Session = Depends(get_db)):
     return {'id': user.id, 'email': user.email, 'message': 'Account created'}
 
 
-@router.post('/auth/login')
+@router.post('/auth/login', dependencies=[Depends(rate_limit('login', 10))])
 def login(body: LoginIn, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.email == body.email.lower()))
     if not user or not verify_password(body.password, user.password_hash):
@@ -95,7 +96,7 @@ def contact(body: ContactIn, db: Session = Depends(get_db)):
     return {'message': 'Enquiry received (demo only; no official government service)'}
 
 
-@router.post('/ai/analyze')
+@router.post('/ai/analyze', dependencies=[Depends(rate_limit('ai', 10))])
 def ai_analyze(body: AIIn, user: User = Depends(require_roles('citizen', 'cmo')), db: Session = Depends(get_db)):
     names = list(db.scalars(select(Department.name)).all())
     return analyze(body.description, names)

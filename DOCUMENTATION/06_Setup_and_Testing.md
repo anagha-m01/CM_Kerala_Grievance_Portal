@@ -28,7 +28,7 @@ JWT_SECRET=REPLACE_WITH_AT_LEAST_32_RANDOM_BYTES
 JWT_EXPIRE_MINUTES=720
 CORS_ORIGINS=http://localhost:5173
 GEMINI_API_KEY=
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.5-flash-lite
 DEMO_ADMIN_PASSWORD=choose-demo-admin-password
 DEMO_OFFICER_PASSWORD=choose-demo-officer-password
 DEMO_CITIZEN_PASSWORD=choose-demo-citizen-password
@@ -55,6 +55,8 @@ Visit `http://localhost:5173`. API docs: `http://localhost:8000/docs`.
 cd backend
 python -m pytest -q
 ```
+
+The automated suite (10 tests, in-memory SQLite, no paid services) covers: the full lifecycle and role access, internal-versus-public remarks, file upload and download rules, the Gemini success path and fallback (SDK mocked), officer isolation between departments, invalid status transitions, escalation with overdue statistics, and login rate limiting.
 
 Tests use an in-memory SQLite database and do **not** need Neon/Gemini or real credentials. They validate full role-separated workflow and contact submission/AI fallback shape. A separate manual check of a live Gemini call is necessary for the real AI feature.
 

@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     JWT_EXPIRE_MINUTES: int = 720
     CORS_ORIGINS: str = 'http://localhost:5173'
     GEMINI_API_KEY: str = ''
-    GEMINI_MODEL: str = 'gemini-2.5-flash'
+    GEMINI_MODEL: str = 'gemini-3.5-flash-lite'
     MAX_FILE_SIZE: int = 2 * 1024 * 1024
     DEMO_ADMIN_PASSWORD: str = ''
     DEMO_OFFICER_PASSWORD: str = ''

@@ -37,7 +37,7 @@
 
 ## Department officer
 
-1. Sign in with the server-seeded assigned account (`officer@example.com`, assigned to Public Works).
+1. Sign in with a server-seeded officer account. There is one per department, for example `officer@example.com` (Public Works) or `officer.health@example.com` (Health); see the README for the full list. An officer sees only cases forwarded to their own department.
 2. Dashboard `/officer` lists only grievances assigned to that officer/department.
 3. Open a case and select **Mark In Progress** with an investigation note.
 4. Add notes and, if appropriate, supporting files and report attachments.

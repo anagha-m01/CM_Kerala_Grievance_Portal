@@ -1,4 +1,3 @@
-
 # CM Kerala — Public Grievance Redressal Portal
 
 ### AI-Powered Public Grievance Management System
@@ -101,7 +100,7 @@ When the model is unavailable, the application provides a clearly labelled rule-
 | Layer | Technology |
 |---|---|
 | Frontend | React.js, Vite, JavaScript (JSX) |
-| Styling | Tailwind CSS |
+| Styling | Custom CSS (Tailwind CSS v4 enabled in the Vite build) |
 | Routing | React Router |
 | HTTP Client | Axios |
 | Charts | Recharts |
@@ -489,7 +488,7 @@ JWT_EXPIRE_MINUTES=720
 CORS_ORIGINS=http://localhost:5173
 
 GEMINI_API_KEY=YOUR_GEMINI_API_KEY
-GEMINI_MODEL=gemini-3.6-flash
+GEMINI_MODEL=gemini-3.5-flash-lite
 
 DEMO_ADMIN_PASSWORD=YOUR_ADMIN_PASSWORD
 DEMO_OFFICER_PASSWORD=YOUR_OFFICER_PASSWORD
@@ -624,15 +623,22 @@ npm run dev
 
 The database seed script creates fictional accounts for testing.
 
-| Role | Email |
-|---|---|
-| CMO Administrator | cmo@example.com |
-| Department Officer | officer@example.com |
-| Citizen | citizen@example.com |
+| Role | Email | Department |
+|---|---|---|
+| CMO Administrator | cmo@example.com | n/a |
+| Department Officer | officer@example.com | Public Works Department |
+| Department Officer | officer.health@example.com | Health Department |
+| Department Officer | officer.education@example.com | Education Department |
+| Department Officer | officer.lsgd@example.com | Local Self Government Department |
+| Department Officer | officer.water@example.com | Kerala Water Authority |
+| Department Officer | officer.kseb@example.com | Kerala State Electricity Board |
+| Department Officer | officer.agri@example.com | Agriculture Department |
+| Department Officer | officer.police@example.com | Police Department |
+| Citizen | citizen@example.com (also citizen2@ and citizen3@example.com) | n/a |
 
 Passwords are configured through the corresponding `DEMO_*_PASSWORD` environment variables.
 
-The seeded officer belongs to the Public Works Department. Additional department officers can be created for testing other departmental workflows.
+There is one fictional officer per department, so a grievance can be forwarded to any department. All officers share the `DEMO_OFFICER_PASSWORD` value. The seed also creates 22 fictional grievances across all 14 districts in every workflow status (including overdue, escalated and reopened cases) so the CMO charts are populated. Run `python -m app.seed` again at any time; it only adds what is missing.
 
 **For evaluators:** Demo passwords should be provided separately in the submission email. They are intentionally not included in this public repository.
 
@@ -661,10 +667,10 @@ python -m pytest -q
 ```text
 ... [100%]
 
-3 passed, 1 warning in 8.45s
+10 passed
 ```
 
-The warning is a Starlette/httpx dependency deprecation warning, not a test failure.
+The suite covers the full lifecycle, role isolation between departments, invalid status transitions, file validation, escalation and overdue statistics, the Gemini success and fallback paths (with the SDK mocked) and rate limiting.
 
 ### Validated Local Workflows
 
@@ -764,13 +770,14 @@ The prototype implements:
 - Environment-based secret management.
 - Timestamped activity history.
 - Separation of public and internal remarks.
+- Per-client rate limiting on login, registration and AI analysis (in-memory, single instance).
 
 ### Known Limitations
 
 - Authentication tokens are stored in browser session storage.
 - File uploads are limited to 2 MB and stored in PostgreSQL.
 - Real-time email and SMS notifications are not implemented.
-- The AI service depends on external API availability.
+- The AI service depends on external API availability. Rate limiting is per process and would need a shared store (for example Redis) with multiple instances.
 - The application is intended for demonstration, not production government operations.
 
 A production deployment would require stronger session management, content scanning, monitoring, auditing, and comprehensive security testing.
@@ -838,7 +845,7 @@ Development prioritized a working end-to-end grievance lifecycle over optional e
 
 ### AI-Assisted Development
 
-OpenAI ChatGPT was used as a development assistant for planning, code generation, debugging, and documentation.
+OpenAI ChatGPT and Anthropic Claude were used as development assistants for planning, code generation, code review, debugging, and documentation. All code was reviewed and is understood by the author.
 
 The application integrates Google's Gemini API to provide AI-assisted grievance recommendations.
 

@@ -1,16 +1,336 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Clock3, FilePlus2, Search, Sparkles, UploadCloud } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  FilePlus2,
+  Search,
+  Sparkles,
+  UploadCloud,
+} from 'lucide-react';
 import { api, errorText, DISTRICTS, PRIORITIES } from '../lib/api';
-import { Badge, CaseTable, Empty, Field, Loading, Notice, PageTitle, StatCard } from '../components/UI';
+import {
+  Badge,
+  CaseTable,
+  Empty,
+  Field,
+  Loading,
+  Notice,
+  PageTitle,
+  StatCard,
+} from '../components/UI';
 
-export function CitizenDashboard(){const [items,setItems]=useState([]);const [stats,setStats]=useState(null);const [err,setErr]=useState('');useEffect(()=>{Promise.all([api.get('/api/grievances'),api.get('/api/citizen/stats')]).then(([a,b])=>{setItems(a.data);setStats(b.data)}).catch(e=>setErr(errorText(e)))},[]);return <div className="container page-section"><PageTitle eyebrow="CITIZEN PORTAL" title="My grievances" description="Submit, track and follow the progress of your reported concerns." actions={<Link to="/citizen/submit" className="btn btn-primary"><FilePlus2 size={17}/> New grievance</Link>}/><Notice>{err}</Notice><div className="stat-grid"><StatCard title="Total submitted" value={stats?.total}/><StatCard title="Pending" value={stats?.pending} icon={<Clock3 size={20}/>}/><StatCard title="Resolved" value={stats?.resolved} icon={<CheckCircle2 size={20}/>}/></div><div className="panel"><div className="panel-header"><h2>Submitted grievances</h2><Link className="table-link" to="/track">Track by ID <ArrowRight size={16}/></Link></div><CaseTable items={items}/></div></div>}
-
-export function SubmitGrievance(){const navigate=useNavigate();const [form,setForm]=useState({district:'',category:'',subject:'',description:'',ai_summary:null,ai_department:null,ai_category:null,ai_priority:null,ai_fallback:false});const [file,setFile]=useState(null);const [ai,setAi]=useState(null);const [err,setErr]=useState('');const [busy,setBusy]=useState(false);const [aiBusy,setAiBusy]=useState(false);
-  const update=(field,value)=>setForm(p=>({...p,[field]:value}));
-  async function analyze(){setAiBusy(true);setErr('');try{const {data}=await api.post('/api/ai/analyze',{description:form.description});setAi(data);setForm(p=>({...p,category:data.category,ai_summary:data.summary,ai_department:data.department,ai_category:data.category,ai_priority:data.priority,ai_fallback:data.source==='fallback'}))}catch(e){setErr(errorText(e))}finally{setAiBusy(false)}}
-  async function submit(e){e.preventDefault();setBusy(true);setErr('');try{const {data}=await api.post('/api/grievances',form);if(file){const payload=new FormData();payload.append('file',file);try{await api.post(`/api/grievances/${data.id}/attachments`,payload)}catch(e){setErr(`Grievance created, but upload failed: ${errorText(e)}. Reference: ${data.reference_no}`);return}}navigate(`/grievances/${data.id}`)}catch(e){setErr(errorText(e))}finally{setBusy(false)}}
-  return <div className="container page-section narrow"><PageTitle eyebrow="CITIZEN PORTAL" title="Submit a grievance" description="Provide accurate details using fictional demonstration information only."/><Notice>{err}</Notice><form onSubmit={submit} className="panel form-grid"><div className="form-row"><Field label="District"><select required value={form.district} onChange={e=>update('district',e.target.value)}><option value="">Select district</option>{DISTRICTS.map(d=><option key={d}>{d}</option>)}</select></Field><Field label="Category"><input required minLength={2} value={form.category} onChange={e=>update('category',e.target.value)} placeholder="e.g. Road Infrastructure"/></Field></div><Field label="Subject"><input required minLength={5} maxLength={200} value={form.subject} onChange={e=>update('subject',e.target.value)} placeholder="Short description of your concern"/></Field><Field label="Detailed description"><textarea rows={6} minLength={15} required value={form.description} onChange={e=>{setForm(p=>({...p,description:e.target.value,ai_summary:null,ai_department:null,ai_category:null,ai_priority:null,ai_fallback:false}));setAi(null)}} placeholder="Describe where, what happened, and the expected outcome (fictional sample data)."/></Field><div className="ai-section"><div className="ai-head"><div><strong><Sparkles size={17}/> AI Grievance Assistant</strong><p>Get suggestions for department, category, priority and a short CMO summary.</p></div><button type="button" onClick={analyze} disabled={aiBusy||form.description.trim().length<15} className="btn btn-light">{aiBusy?'Analyzing...':'Analyze complaint'}</button></div>{ai&&<div className="ai-result"><Badge status={ai.source==='gemini'?'In Progress':'High'}>{ai.source==='gemini'?'Gemini AI suggestion':'RULE-BASED FALLBACK (NOT AI)'}</Badge>{ai.warning&&<Notice type="warning">{ai.warning}</Notice>}<div className="form-row"><Field label="Suggested department (advisory)"><input value={form.ai_department||''} onChange={e=>update('ai_department',e.target.value)}/></Field><Field label="Suggested priority (advisory)"><select value={form.ai_priority||'Medium'} onChange={e=>update('ai_priority',e.target.value)}>{PRIORITIES.map(p=><option key={p}>{p}</option>)}</select></Field></div><Field label="AI summary (editable)"><textarea rows={2} value={form.ai_summary||''} onChange={e=>update('ai_summary',e.target.value)}/></Field><div className="small muted">AI outputs are advisory. CMO approves the actual department and priority.</div></div>}</div><Field label="Supporting attachment (optional, PNG/JPG/PDF, max 2 MB)"><input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={e=>setFile(e.target.files[0]||null)}/></Field><div className="form-actions"><button disabled={busy} className="btn btn-primary btn-lg">{busy?'Submitting...':'Submit grievance'} <ArrowRight size={17}/></button></div></form></div>
+export function CitizenDashboard() {
+  const [items, setItems] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [err, setErr] = useState('');
+  useEffect(() => {
+    Promise.all([api.get('/api/grievances'), api.get('/api/citizen/stats')])
+      .then(([a, b]) => {
+        setItems(a.data);
+        setStats(b.data);
+      })
+      .catch((e) => setErr(errorText(e)));
+  }, []);
+  return (
+    <div className="container page-section">
+      <PageTitle
+        eyebrow="CITIZEN PORTAL"
+        title="My grievances"
+        description="Submit, track and follow the progress of your reported concerns."
+        actions={
+          <Link to="/citizen/submit" className="btn btn-primary">
+            <FilePlus2 size={17} /> New grievance
+          </Link>
+        }
+      />
+      <Notice>{err}</Notice>
+      <div className="stat-grid">
+        <StatCard title="Total submitted" value={stats?.total} />
+        <StatCard title="Pending" value={stats?.pending} icon={<Clock3 size={20} />} />
+        <StatCard title="Resolved" value={stats?.resolved} icon={<CheckCircle2 size={20} />} />
+      </div>
+      <div className="panel">
+        <div className="panel-header">
+          <h2>Submitted grievances</h2>
+          <Link className="table-link" to="/track">
+            Track by ID <ArrowRight size={16} />
+          </Link>
+        </div>
+        <CaseTable items={items} />
+      </div>
+    </div>
+  );
 }
 
-export function TrackGrievance(){const [ref,setRef]=useState('');const [data,setData]=useState(null);const [err,setErr]=useState('');const [loading,setLoading]=useState(false);async function submit(e){e.preventDefault();setLoading(true);setErr('');setData(null);try{const result=await api.get(`/api/grievances/track/${encodeURIComponent(ref.trim().toUpperCase())}`);setData(result.data)}catch(e){setErr(errorText(e))}finally{setLoading(false)}}return <div className="container page-section narrow"><PageTitle eyebrow="PUBLIC TRACKING" title="Track your grievance" description="Enter the reference number provided after successful submission."/><form className="panel track-form" onSubmit={submit}><Field label="Grievance reference number"><input required value={ref} onChange={e=>setRef(e.target.value)} placeholder="CMK-2026-XXXXXXXXXX"/></Field><button disabled={loading} className="btn btn-primary"><Search size={17}/> {loading?'Searching...':'Track grievance'}</button></form><Notice>{err}</Notice>{data&&<div className="panel"><div className="panel-header"><div><div className="eyebrow">{data.reference_no}</div><h2>Current status</h2></div><Badge status={data.status}/></div><p><strong>Assigned department:</strong> {data.department}</p><h3>Status history</h3><div className="timeline">{data.history.map((h,i)=><div className="timeline-item" key={i}><div className="small muted">{new Date(h.created_at).toLocaleString()}</div><strong>{h.action} · {h.new_status}</strong><p>{h.remark}</p></div>)}</div></div>}</div>}
+export function SubmitGrievance() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    district: '',
+    category: '',
+    subject: '',
+    description: '',
+    ai_summary: null,
+    ai_department: null,
+    ai_category: null,
+    ai_priority: null,
+    ai_fallback: false,
+  });
+  const [file, setFile] = useState(null);
+  const [ai, setAi] = useState(null);
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const update = (field, value) => setForm((p) => ({ ...p, [field]: value }));
+  async function analyze() {
+    setAiBusy(true);
+    setErr('');
+    try {
+      const { data } = await api.post('/api/ai/analyze', { description: form.description });
+      setAi(data);
+      setForm((p) => ({
+        ...p,
+        category: data.category,
+        ai_summary: data.summary,
+        ai_department: data.department,
+        ai_category: data.category,
+        ai_priority: data.priority,
+        ai_fallback: data.source === 'fallback',
+      }));
+    } catch (e) {
+      setErr(errorText(e));
+    } finally {
+      setAiBusy(false);
+    }
+  }
+  async function submit(e) {
+    e.preventDefault();
+    setBusy(true);
+    setErr('');
+    try {
+      const { data } = await api.post('/api/grievances', form);
+      if (file) {
+        const payload = new FormData();
+        payload.append('file', file);
+        try {
+          await api.post(`/api/grievances/${data.id}/attachments`, payload);
+        } catch (e) {
+          setErr(
+            `Grievance created, but upload failed: ${errorText(e)}. Reference: ${data.reference_no}`
+          );
+          return;
+        }
+      }
+      navigate(`/grievances/${data.id}`);
+    } catch (e) {
+      setErr(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="container page-section narrow">
+      <PageTitle
+        eyebrow="CITIZEN PORTAL"
+        title="Submit a grievance"
+        description="Provide accurate details using fictional demonstration information only."
+      />
+      <Notice>{err}</Notice>
+      <form onSubmit={submit} className="panel form-grid">
+        <div className="form-row">
+          <Field label="District">
+            <select
+              required
+              value={form.district}
+              onChange={(e) => update('district', e.target.value)}
+            >
+              <option value="">Select district</option>
+              {DISTRICTS.map((d) => (
+                <option key={d}>{d}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Category">
+            <input
+              required
+              minLength={2}
+              value={form.category}
+              onChange={(e) => update('category', e.target.value)}
+              placeholder="e.g. Road Infrastructure"
+            />
+          </Field>
+        </div>
+        <Field label="Subject">
+          <input
+            required
+            minLength={5}
+            maxLength={200}
+            value={form.subject}
+            onChange={(e) => update('subject', e.target.value)}
+            placeholder="Short description of your concern"
+          />
+        </Field>
+        <Field label="Detailed description">
+          <textarea
+            rows={6}
+            minLength={15}
+            required
+            value={form.description}
+            onChange={(e) => {
+              setForm((p) => ({
+                ...p,
+                description: e.target.value,
+                ai_summary: null,
+                ai_department: null,
+                ai_category: null,
+                ai_priority: null,
+                ai_fallback: false,
+              }));
+              setAi(null);
+            }}
+            placeholder="Describe where, what happened, and the expected outcome (fictional sample data)."
+          />
+        </Field>
+        <div className="ai-section">
+          <div className="ai-head">
+            <div>
+              <strong>
+                <Sparkles size={17} /> AI Grievance Assistant
+              </strong>
+              <p>Get suggestions for department, category, priority and a short CMO summary.</p>
+            </div>
+            <button
+              type="button"
+              onClick={analyze}
+              disabled={aiBusy || form.description.trim().length < 15}
+              className="btn btn-light"
+            >
+              {aiBusy ? 'Analyzing...' : 'Analyze complaint'}
+            </button>
+          </div>
+          {ai && (
+            <div className="ai-result">
+              <Badge status={ai.source === 'gemini' ? 'In Progress' : 'High'}>
+                {ai.source === 'gemini' ? 'Gemini AI suggestion' : 'RULE-BASED FALLBACK (NOT AI)'}
+              </Badge>
+              {ai.warning && <Notice type="warning">{ai.warning}</Notice>}
+              <div className="form-row">
+                <Field label="Suggested department (advisory)">
+                  <input
+                    value={form.ai_department || ''}
+                    onChange={(e) => update('ai_department', e.target.value)}
+                  />
+                </Field>
+                <Field label="Suggested priority (advisory)">
+                  <select
+                    value={form.ai_priority || 'Medium'}
+                    onChange={(e) => update('ai_priority', e.target.value)}
+                  >
+                    {PRIORITIES.map((p) => (
+                      <option key={p}>{p}</option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+              <Field label="AI summary (editable)">
+                <textarea
+                  rows={2}
+                  value={form.ai_summary || ''}
+                  onChange={(e) => update('ai_summary', e.target.value)}
+                />
+              </Field>
+              <div className="small muted">
+                AI outputs are advisory. CMO approves the actual department and priority.
+              </div>
+            </div>
+          )}
+        </div>
+        <Field label="Supporting attachment (optional, PNG/JPG/PDF, max 2 MB)">
+          <input
+            type="file"
+            accept=".pdf,.png,.jpg,.jpeg"
+            onChange={(e) => setFile(e.target.files[0] || null)}
+          />
+        </Field>
+        <div className="form-actions">
+          <button disabled={busy} className="btn btn-primary btn-lg">
+            {busy ? 'Submitting...' : 'Submit grievance'} <ArrowRight size={17} />
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+export function TrackGrievance() {
+  const [ref, setRef] = useState('');
+  const [data, setData] = useState(null);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(false);
+  async function submit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setErr('');
+    setData(null);
+    try {
+      const result = await api.get(
+        `/api/grievances/track/${encodeURIComponent(ref.trim().toUpperCase())}`
+      );
+      setData(result.data);
+    } catch (e) {
+      setErr(errorText(e));
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <div className="container page-section narrow">
+      <PageTitle
+        eyebrow="PUBLIC TRACKING"
+        title="Track your grievance"
+        description="Enter the reference number provided after successful submission."
+      />
+      <form className="panel track-form" onSubmit={submit}>
+        <Field label="Grievance reference number">
+          <input
+            required
+            value={ref}
+            onChange={(e) => setRef(e.target.value)}
+            placeholder="CMK-2026-XXXXXXXXXX"
+          />
+        </Field>
+        <button disabled={loading} className="btn btn-primary">
+          <Search size={17} /> {loading ? 'Searching...' : 'Track grievance'}
+        </button>
+      </form>
+      <Notice>{err}</Notice>
+      {data && (
+        <div className="panel">
+          <div className="panel-header">
+            <div>
+              <div className="eyebrow">{data.reference_no}</div>
+              <h2>Current status</h2>
+            </div>
+            <Badge status={data.status} />
+          </div>
+          <p>
+            <strong>Assigned department:</strong> {data.department}
+          </p>
+          <h3>Status history</h3>
+          <div className="timeline">
+            {data.history.map((h, i) => (
+              <div className="timeline-item" key={i}>
+                <div className="small muted">{new Date(h.created_at).toLocaleString()}</div>
+                <strong>
+                  {h.action} · {h.new_status}
+                </strong>
+                <p>{h.remark}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

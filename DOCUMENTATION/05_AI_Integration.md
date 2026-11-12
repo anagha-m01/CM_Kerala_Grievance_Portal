@@ -8,6 +8,7 @@ The assignment requires an **actual AI model/API** to analyze grievance text and
 
 - `POST /api/ai/analyze` (citizen/CMO role) accepts complaint text length 15–10,000 characters.
 - FastAPI `app/services/ai.py` invokes the Google Gemini SDK via `google.genai.Client`.
+- Default model: `gemini-3.5-flash-lite` (a stable Gemini Flash-Lite model), configurable through the `GEMINI_MODEL` environment variable.
 - It supplies the exact current department names from SQLAlchemy/PostgreSQL and asks for a short factual summary.
 - Gemini JSON structured response is validated with `AIResult` (Pydantic). Department must match the existing names and priority must be Low/Medium/High.
 - The frontend displays AI output as **advisory** and allows editing the suggested department, priority and summary. The CMO makes final assignment/review decisions.
@@ -49,7 +50,7 @@ If no Gemini key exists, quota runs out, network fails or Gemini response does n
 
 **Important:** The fallback **does not satisfy** the mandatory real-AI evaluation requirement. To demonstrate AI, configure a valid Gemini key, check eligible model/quota, run an actual call and record successful response as part of the demo. No Gemini credentials or paid quota are bundled with this ZIP, so a live model call has **not been verified here**.
 
-Safeguards: no direct state changes from model, restricted department suggestions, server-side key management, bounded input, instruction-injection warning in prompt, no raw exception/key leakage, fictional data only. Risks remaining include model hallucinations, bias, fallback accuracy, quota limits and third-party model processing.
+Safeguards: no direct state changes from model, restricted department suggestions, server-side key management, bounded input, per-client rate limiting (10 AI requests per minute) to protect the free quota, instruction-injection warning in prompt, no raw exception/key leakage, fictional data only. Risks remaining include model hallucinations, bias, fallback accuracy, quota limits and third-party model processing.
 
 ## Why no LangChain / LangGraph
 

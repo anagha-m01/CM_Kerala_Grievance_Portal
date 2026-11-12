@@ -1,5 +1,5 @@
 digraph architecture {
-  graph [rankdir=TB, bgcolor="white", pad=0.24, nodesep=0.58, ranksep=0.55, fontname="Arial", label="CM Kerala | Proposed System Architecture", labelloc=t, fontsize=22, fontcolor="#164e3c"];
+  graph [rankdir=TB, bgcolor="white", pad=0.24, nodesep=0.58, ranksep=0.55, fontname="Arial", label="CM Kerala | System Architecture", labelloc=t, fontsize=22, fontcolor="#164e3c"];
   node [shape=box, style="rounded,filled", color="#b3d6c6", fontname="Arial", fontsize=12, margin="0.2,0.16", fillcolor="#eff8f2", fontcolor="#184e39"];
   edge [color="#689b83", penwidth=1.5, arrowsize=.8];
   users [label="Public / Citizen / CMO / Department Officer", fillcolor="#dbf0e3"];

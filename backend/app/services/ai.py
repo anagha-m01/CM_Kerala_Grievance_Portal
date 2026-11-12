@@ -1,5 +1,9 @@
+import logging
+
 from app.core.config import get_settings
 from app.schemas.inputs import AIResult
+
+logger = logging.getLogger(__name__)
 
 
 def fallback(description: str, reason: str) -> dict:
@@ -53,5 +57,5 @@ def analyze(description: str, department_names: list[str]) -> dict:
         return {**result.model_dump(), 'source': 'gemini', 'warning': None}
     except Exception as exc:
         # Do not leak key, raw exception, or private detail to client.
-        print(f'AI analysis failed: {type(exc).__name__}')
+        logger.warning('AI analysis failed: %s', type(exc).__name__)
         return fallback(description, 'model request failed or exceeded free quota')

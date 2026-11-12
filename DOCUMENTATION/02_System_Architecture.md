@@ -58,6 +58,7 @@ CMO review changes status to `Under Review`; assignment records department/offic
 - Public tracking displays no citizen identity, original description or internal remarks.
 - Gemini key stays on backend. Citizen complaint text is treated as untrusted input.
 - Cross-origin requests are limited using `CORS_ORIGINS`; exact frontend host must be configured.
+- Login (10/min), registration (5/min) and AI analysis (10/min) are rate limited per client IP by `app/core/ratelimit.py`; HTTP 429 is returned when exceeded. The limiter is in-memory, which suits a single-instance prototype.
 
 ## Deployment shape
 
