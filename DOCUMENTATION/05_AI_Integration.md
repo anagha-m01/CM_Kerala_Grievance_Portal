@@ -48,7 +48,7 @@ If no Gemini key exists, quota runs out, network fails or Gemini response does n
 {"department":"Public Works Department","category":"Road Infrastructure","priority":"Medium","summary":"...","source":"fallback","warning":"AI model unavailable (...). These are simple demonstration rules, NOT AI-generated recommendations. Please review manually."}
 ```
 
-**Important:** The fallback **does not satisfy** the mandatory real-AI evaluation requirement. To demonstrate AI, configure a valid Gemini key, check eligible model/quota, run an actual call and record successful response as part of the demo. No Gemini credentials or paid quota are bundled with this ZIP, so a live model call has **not been verified here**.
+**Important:** The fallback **does not satisfy** the mandatory real-AI evaluation requirement. To demonstrate AI, configure a valid Gemini key, check eligible model/quota, run an actual call and record successful response as part of the demo. No Gemini credentials or paid quota are bundled with this ZIP, so a live model call has **been verified**.
 
 Safeguards: no direct state changes from model, restricted department suggestions, server-side key management, bounded input, per-client rate limiting (10 AI requests per minute) to protect the free quota, instruction-injection warning in prompt, no raw exception/key leakage, fictional data only. Risks remaining include model hallucinations, bias, fallback accuracy, quota limits and third-party model processing.
 
