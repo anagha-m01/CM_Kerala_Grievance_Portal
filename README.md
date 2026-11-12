@@ -1,102 +1,886 @@
+
 # CM Kerala — Public Grievance Redressal Portal
 
-> **RECRUITMENT PROTOTYPE — NOT AN OFFICIAL GOVERNMENT WEBSITE.** Built for the WhiteMatrix Software Solutions AI Full Stack Engineer machine test. Uses fictional demonstration grievances. This project is not operated, authorized or endorsed by the Government of Kerala or the Chief Minister's Office (CMO). Do not submit real citizen data or use official government credentials.
+### AI-Powered Public Grievance Management System
 
-A full-stack role-based complaint redressal **source-code prototype** with citizen, CMO and department-officer dashboards, review/assignment, action reports, a timestamped grievance history, a public reference tracker, limited attachments, statistics, and advisory AI complaint classification.
+An AI-assisted, full-stack grievance redressal platform designed to streamline citizen complaint submission, departmental assignment, investigation, resolution, and transparent status tracking.
 
-## Technology
+Built as part of the **AI Full Stack Engineer Technical Assessment — WhiteMatrix Software Solutions**.
 
-- **Frontend:** React 18 + Vite + JSX, React Router, Tailwind CSS 4, Recharts, Axios
-- **Backend:** Python + FastAPI + Pydantic, SQLAlchemy 2, Alembic
-- **Database:** PostgreSQL (Neon for hosting); SQLite can be used for local development and automated tests
-- **AI:** Google Gemini SDK (`google-genai`) with Pydantic structured output; clearly labeled rules fallback when unavailable — **the fallback is not real AI**
-- **Files:** PDF/PNG/JPEG <= 2 MB stored in database `BYTEA` (demo only); authorized download endpoint
-- **Hosting suggestion:** React on Vercel and FastAPI on Render; both require configuration in your own accounts
+### Live Application
 
-## Quick start — local
+- **Frontend:** https://cm-kerala-grievance-portal-orcin.vercel.app/
+- **Backend API:** https://cm-kerala-api.onrender.com/
+- **Swagger API Documentation:** https://cm-kerala-api.onrender.com/docs
 
-Requirements: Python 3.11+; Node 20+; npm. Use a Neon PostgreSQL `DATABASE_URL` in backend `.env` for a hosted database; SQLite is useful for initial local testing.
+> **Disclaimer:** This application is a recruitment assessment prototype. It is not affiliated with, endorsed by, or operated by the Government of Kerala or the Chief Minister's Office. All demonstration accounts and grievances are fictional. Do not submit real grievances or sensitive personal information.
 
-### 1. Backend
+---
+
+## 1. Project Overview
+
+The CM Kerala Public Grievance Redressal Portal is a web-based application that enables citizens to submit public grievances and track their resolution.
+
+The system provides dedicated dashboards for citizens, Chief Minister's Office (CMO) administrators, and department officers.
+
+An integrated AI Grievance Assistant analyzes complaint descriptions and recommends appropriate departments, complaint categories, priority levels, and concise summaries.
+
+The application follows a structured, role-based workflow in which official decisions remain under human control.
+
+### Objectives
+
+- Provide a centralized platform for citizen grievances.
+- Enable transparent tracking using unique reference numbers.
+- Simplify departmental assignment and complaint management.
+- Support AI-assisted grievance classification.
+- Maintain an auditable history of grievance activities.
+- Improve accountability through officer reports and CMO review.
+- Allow citizens to provide feedback after resolution.
+
+---
+
+## 2. Key Features
+
+### Citizen Portal
+
+- Citizen registration and secure login.
+- Grievance submission with district, category, subject, and description.
+- Optional PDF and image attachments.
+- Unique grievance reference number generation.
+- AI-assisted department and priority suggestions.
+- Personal dashboard showing submitted grievances.
+- Complaint tracking and status history.
+- Citizen-visible administrative remarks.
+- Feedback submission after resolution.
+- Option to reopen resolved grievances.
+
+### Chief Minister's Office Dashboard
+
+- Centralized grievance management.
+- Total, pending, resolved, and overdue statistics.
+- District-wise and department-wise visualization.
+- Filtering by district, category, status, and priority.
+- Individual grievance review.
+- AI recommendation review.
+- Department and officer assignment.
+- Administrative remarks.
+- Escalation of grievances.
+- Action-taken report review.
+- Resolution approval or request for further action.
+- Complete grievance history.
+
+### Department Officer Dashboard
+
+- Role-based officer authentication.
+- Access to assigned departmental grievances.
+- Complaint and attachment review.
+- Investigation remarks.
+- Grievance status updates.
+- Action-taken report submission.
+- Resolution details sent to the CMO for approval.
+
+### AI Grievance Assistant
+
+The AI assistant uses Google's Gemini API to analyze complaint descriptions and generate:
+
+1. Recommended government department.
+2. Suggested grievance category.
+3. Priority classification: Low, Medium, or High.
+4. A concise summary for CMO administrators.
+
+AI results are validated through Pydantic and remain advisory.
+
+When the model is unavailable, the application provides a clearly labelled rule-based fallback.
+
+**AI does not independently approve, assign, or resolve grievances.**
+
+---
+
+## 3. Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React.js, Vite, JavaScript (JSX) |
+| Styling | Tailwind CSS |
+| Routing | React Router |
+| HTTP Client | Axios |
+| Charts | Recharts |
+| Icons | Lucide React |
+| Backend | Python, FastAPI |
+| API Validation | Pydantic |
+| Database | PostgreSQL |
+| Database Hosting | Neon |
+| ORM | SQLAlchemy |
+| Database Migrations | Alembic |
+| Authentication | JWT, password hashing |
+| AI Integration | Google Gemini API |
+| AI SDK | google-genai |
+| Containerization | Docker, Docker Compose |
+| Frontend Deployment | Vercel |
+| Backend Deployment | Render |
+| Testing | Pytest, FastAPI TestClient |
+| Version Control | Git, GitHub |
+
+### Why FastAPI?
+
+FastAPI was selected as the backend framework because it provides:
+
+- High-performance REST API development.
+- Native Python integration for AI services.
+- Pydantic-based data validation.
+- Automatic Swagger/OpenAPI documentation.
+- Support for dependency-based authentication.
+- Straightforward integration with SQLAlchemy.
+
+The assignment accepts backend frameworks equivalent to Node.js and Express.
+
+---
+
+## 4. System Architecture
+
+The application follows a modular client-server architecture.
+
+```text
+                  CITIZEN / CMO / OFFICER
+                            |
+                            v
+                    React + Vite
+                      (Vercel)
+                            |
+                       HTTPS / REST
+                            |
+                            v
+                        FastAPI
+                        (Render)
+                            |
+          +-----------------+------------------+
+          |                 |                  |
+          v                 v                  v
+     Authentication    Business Logic      AI Service
+       JWT / RBAC       and REST APIs      Gemini API
+          |                 |
+          +--------+--------+
+                   |
+                   v
+                SQLAlchemy
+                   |
+                   v
+             Neon PostgreSQL
+                   |
+       +-----------+-----------+
+       |           |           |
+      Users    Grievances    History
+       |           |           |
+   Departments  Attachments  Reports
+                   |
+                Feedback
+```
+
+### Architecture Components
+
+**Frontend**
+
+React handles user interactions, routing, forms, dashboards, and API communication.
+
+**Backend**
+
+FastAPI manages business logic, authentication, authorization, grievance operations, and AI integration.
+
+**Database**
+
+PostgreSQL stores users, departments, grievances, assignments, status history, reports, attachments, feedback, and contact enquiries.
+
+**AI Service**
+
+The backend communicates with Gemini through the Google GenAI SDK and validates the structured response using Pydantic.
+
+Architecture diagrams:
+
+- [System Architecture](DOCUMENTATION/diagrams/system_architecture.png)
+- [Database ER Diagram](DOCUMENTATION/diagrams/database_er.png)
+
+---
+
+## 5. Grievance Management Workflow
+
+The application implements the following lifecycle:
+
+```text
+Citizen Submits Grievance
+          |
+          v
+    SUBMITTED
+          |
+          v
+    CMO Reviews
+          |
+          v
+    UNDER REVIEW
+          |
+          v
+CMO Assigns Department / Officer
+          |
+          v
+Officer Starts Investigation
+          |
+          v
+    IN PROGRESS
+          |
+          v
+Officer Submits Action-Taken Report
+          |
+          v
+CMO Reviews Department Response
+          |
+          +---- Request Further Action
+          |              |
+          |              v
+          |      Officer Investigation
+          |
+          v
+    RESOLVED
+          |
+          v
+Citizen Views Outcome
+          |
+          v
+Citizen Submits Feedback
+          |
+          v
+REOPENED (if further review is needed)
+```
+
+### Supported Statuses
+
+- `Submitted`
+- `Under Review`
+- `In Progress`
+- `Resolved`
+- `Reopened`
+
+Every status change is recorded with its timestamp, responsible user, and relevant remarks.
+
+---
+
+## 6. Project Structure
+
+```text
+CM_Kerala_Grievance_Portal/
+|
+|-- frontend/
+|   |-- src/
+|   |   |-- components/
+|   |   |-- contexts/
+|   |   |-- lib/
+|   |   |-- pages/
+|   |   |-- App.jsx
+|   |   |-- main.jsx
+|   |   `-- styles.css
+|   |-- Dockerfile
+|   |-- package.json
+|   |-- vite.config.js
+|   `-- vercel.json
+|
+|-- backend/
+|   |-- app/
+|   |   |-- api/
+|   |   |   `-- routes.py
+|   |   |-- core/
+|   |   |   |-- config.py
+|   |   |   `-- security.py
+|   |   |-- db/
+|   |   |   `-- session.py
+|   |   |-- models/
+|   |   |   `-- entities.py
+|   |   |-- schemas/
+|   |   |   `-- inputs.py
+|   |   |-- services/
+|   |   |   |-- ai.py
+|   |   |   `-- helpers.py
+|   |   |-- main.py
+|   |   `-- seed.py
+|   |-- alembic/
+|   |-- tests/
+|   |-- Dockerfile
+|   |-- requirements.txt
+|   |-- alembic.ini
+|   `-- .env.example
+|
+|-- DOCUMENTATION/
+|   |-- 01_Project_Overview.md
+|   |-- 02_System_Architecture.md
+|   |-- 03_Database_Design.md
+|   |-- 04_API_Documentation.md
+|   |-- 05_AI_Integration.md
+|   |-- 06_Setup_and_Testing.md
+|   |-- 07_User_Guide.md
+|   `-- diagrams/
+|
+|-- compose.yaml
+|-- .env.example
+|-- .gitignore
+`-- README.md
+```
+
+---
+
+## 7. Database Design
+
+The application uses PostgreSQL with SQLAlchemy ORM and Alembic migrations.
+
+### Main Entities
+
+| Entity | Purpose |
+|---|---|
+| Users | Citizen, CMO, and officer accounts |
+| Departments | Government department information |
+| Grievances | Complaint details and current status |
+| Grievance History | Timestamped status and activity records |
+| Department Assignments | Department and officer assignments |
+| Attachments | Supporting documents and files |
+| Action Reports | Officer investigation and action reports |
+| Citizen Feedback | Feedback after resolution |
+| Contact Enquiries | Public contact form submissions |
+
+### Database Design Principles
+
+- Primary and foreign key relationships.
+- Relational data integrity.
+- Unique grievance reference numbers.
+- Historical audit records.
+- Department-based access restrictions.
+- Persistent complaint and attachment storage.
+
+---
+
+## 8. REST API
+
+The FastAPI backend exposes REST endpoints for application operations.
+
+### Authentication
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Citizen registration |
+| POST | `/api/auth/login` | User authentication |
+
+### Grievance Management
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/grievances` | Submit grievance |
+| GET | `/api/grievances` | Retrieve authorized grievances |
+| GET | `/api/grievances/{id}` | View grievance details |
+| GET | `/api/grievances/track/{reference}` | Track grievance |
+| POST | `/api/grievances/{id}/review` | CMO review |
+| POST | `/api/grievances/{id}/assign` | Assign department/officer |
+| PATCH | `/api/grievances/{id}/status` | Update grievance status |
+| POST | `/api/grievances/{id}/reports` | Submit action report |
+
+### Other Services
+
+- Department retrieval.
+- CMO statistics.
+- Officer statistics.
+- File upload and retrieval.
+- Grievance remarks.
+- Citizen feedback.
+- Contact enquiries.
+- AI grievance analysis.
+
+### API Documentation
+
+FastAPI automatically generates interactive Swagger documentation.
+
+**Live Swagger UI:**
+
+https://cm-kerala-api.onrender.com/docs
+
+Detailed endpoint descriptions and request/response examples are available in:
+
+[04_API_Documentation.md](DOCUMENTATION/04_API_Documentation.md)
+
+---
+
+## 9. AI Integration
+
+The AI Grievance Assistant uses the Google Gemini API through the official `google-genai` Python SDK.
+
+### Processing Pipeline
+
+```text
+Citizen Complaint Description
+             |
+             v
+       FastAPI Endpoint
+             |
+             v
+     Input Validation
+             |
+             v
+        Gemini API
+             |
+             v
+     Structured Response
+             |
+             v
+     Pydantic Validation
+             |
+             v
+  Human-Reviewable Suggestions
+             |
+             v
+      Grievance Submission
+```
+
+### Example AI Response
+
+```json
+{
+  "department": "Health Department",
+  "category": "Healthcare",
+  "priority": "High",
+  "summary": "A government health centre is experiencing a shortage of essential medicines."
+}
+```
+
+### AI Safeguards
+
+- Structured response validation using Pydantic.
+- Restricted department and priority values.
+- Human review of AI recommendations.
+- Graceful handling of API failures.
+- Explicitly labelled non-AI fallback.
+- Gemini API key stored only on the backend.
+
+The application uses direct LLM integration rather than LangChain or LangGraph because the required grievance analysis is a focused classification and summarization task.
+
+---
+
+## 10. Local Setup
+
+### Prerequisites
+
+- Git
+- Docker Desktop
+- Neon PostgreSQL database
+- Gemini API key for real AI functionality
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/anagha-m01/CM_Kerala_Grievance_Portal.git
+
+cd CM_Kerala_Grievance_Portal
+```
+
+### Configure Environment Variables
+
+Create `backend/.env` from `backend/.env.example`.
+
+Required configuration:
+
+```dotenv
+DATABASE_URL=YOUR_NEON_POSTGRESQL_URL
+
+JWT_SECRET=YOUR_SECURE_RANDOM_SECRET
+JWT_EXPIRE_MINUTES=720
+
+CORS_ORIGINS=http://localhost:5173
+
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+GEMINI_MODEL=gemini-3.6-flash
+
+DEMO_ADMIN_PASSWORD=YOUR_ADMIN_PASSWORD
+DEMO_OFFICER_PASSWORD=YOUR_OFFICER_PASSWORD
+DEMO_CITIZEN_PASSWORD=YOUR_CITIZEN_PASSWORD
+```
+
+Use a Gemini model that is available to your account. Free-tier model availability and usage limits may change.
+
+Generate a secure JWT secret:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+Never commit real secrets to GitHub.
+
+### Start with Docker
+
+From the project root:
+
+```bash
+docker compose up --build -d
+```
+
+Check container status:
+
+```bash
+docker compose ps
+```
+
+The backend Dockerfile applies Alembic migrations during startup.
+
+### Seed Demo Data
+
+```bash
+docker compose exec backend python -m app.seed
+```
+
+### Access the Application
+
+Frontend:
+
+http://localhost:5173
+
+FastAPI backend:
+
+http://localhost:8000
+
+Swagger documentation:
+
+http://localhost:8000/docs
+
+### View Backend Logs
+
+```bash
+docker compose logs -f backend
+```
+
+### Stop Containers
+
+```bash
+docker compose down
+```
+
+---
+
+## 11. Development Without Docker
+
+### Backend
 
 ```bash
 cd backend
+
 python -m venv .venv
-# macOS/Linux: source .venv/bin/activate
-# Windows PowerShell: .venv\\Scripts\\Activate.ps1
-pip install -r requirements.txt
-cp .env.example .env        # On Windows: copy .env.example .env
 ```
 
-Edit `backend/.env`. **Change `JWT_SECRET` to a random secret at least 32 bytes long**. For local demo, default `DATABASE_URL=sqlite:///./cm_kerala.db`. To use Neon set `DATABASE_URL` to your Postgres connection string (SSL parameters supplied by Neon). Set 3 `DEMO_*_PASSWORD` variables to different strong test-account passwords. Optionally set `GEMINI_API_KEY`.
+Activate on Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Install dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Configure `backend/.env`, then initialize the database:
 
 ```bash
 alembic upgrade head
-python -m app.seed
-uvicorn app.main:app --reload --port 8000
 ```
 
-Backend at http://localhost:8000, OpenAPI at http://localhost:8000/docs, health at http://localhost:8000/api/health.
+Seed the database:
 
-### 2. Frontend (second terminal)
+```bash
+python -m app.seed
+```
+
+Start FastAPI:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+### Frontend
+
+In a separate terminal:
 
 ```bash
 cd frontend
+
 npm install
-cp .env.example .env       # Windows: copy .env.example .env
+```
+
+Configure `frontend/.env`:
+
+```dotenv
+VITE_API_URL=http://localhost:8000
+```
+
+Start the React application:
+
+```bash
 npm run dev
 ```
 
-Open http://localhost:5173. For local development `VITE_API_URL=http://localhost:8000`. `VITE_*` variables are public browser configuration — never put secrets in them.
+---
 
-### 3. Demo accounts
+## 12. Demo Accounts
 
-The seed script creates test users:
+The database seed script creates fictional accounts for testing.
 
-| Role | Email | Password |
-|---|---|---|
-| CMO | `cmo@example.com` | `DEMO_ADMIN_PASSWORD` value in `backend/.env` |
-| Officer (PWD) | `officer@example.com` | `DEMO_OFFICER_PASSWORD` value in `backend/.env` |
-| Citizen | `citizen@example.com` | `DEMO_CITIZEN_PASSWORD` value in `backend/.env` |
+| Role | Email |
+|---|---|
+| CMO Administrator | cmo@example.com |
+| Department Officer | officer@example.com |
+| Citizen | citizen@example.com |
 
-**Important:** Share only separate, disposable demo account credentials with evaluators after deployment. Do not publish the real database URL, JWT secret or Gemini key. The seed sample data is fictional.
+Passwords are configured through the corresponding `DEMO_*_PASSWORD` environment variables.
 
-## Primary demo workflow
+The seeded officer belongs to the Public Works Department. Additional department officers can be created for testing other departmental workflows.
 
-1. Sign in as citizen, submit grievance, optionally analyze text using AI and upload a small file. Copy the reference number.
-2. Sign in as CMO, review a new grievance and set its priority; assign it to a department officer.
-3. Sign in as officer; open assigned grievance, set `In Progress`, record investigation details, optionally attach evidence and submit an action-taken report.
-4. Sign in as CMO; inspect the report and either approve its resolution or request further action.
-5. Sign in as citizen; track status/history, give feedback on a resolved case or reopen it.
-6. Open `/track` without signing in to view a **limited** reference-based tracker; private fields are omitted.
+**For evaluators:** Demo passwords should be provided separately in the submission email. They are intentionally not included in this public repository.
 
-Statuses: `Submitted`, `Under Review`, `In Progress`, `Resolved`, `Reopened`. Internal comments are excluded from public/citizen history. CMO review of a submitted action report is an operation, not a sixth grievance status.
+---
 
-## API and tests
+## 13. Testing and Validation
 
-- Interactive OpenAPI documentation: `/docs`
-- Tests (from `backend/`): `python -m pytest -q`
-- Full API contracts and examples: [API documentation](DOCUMENTATION/04_API_Documentation.md)
-- Test cases: [Setup and testing](DOCUMENTATION/06_Setup_and_Testing.md)
+Backend testing is implemented using Pytest and FastAPI TestClient.
 
-## Deployment
+### Run Automated Tests
 
-See [Setup and testing](DOCUMENTATION/06_Setup_and_Testing.md) for Neon, Vercel and Render instructions. **This ZIP is source code only**: it does not include a hosted URL, external service credentials, a tested live Gemini call or a recorded demo video. These require your accounts and verification after deployment.
+Using Docker:
 
-## Limitations / security notes
+```bash
+docker compose exec backend python -m pytest -q
+```
 
-- Demo uses bearer JWT held in `sessionStorage`; this is simpler than production hardened HttpOnly-cookie session management. Use stronger browser session security and CSRF mitigation in production.
-- Small binary attachments are stored in PostgreSQL. This consumes database storage and is **not suitable for a scaled government platform**.
-- Free Python hosts may sleep and take time to wake; monitor application health and disclose free-host limitations.
-- In the absence of `GEMINI_API_KEY`, AI analysis returns an explicit `source: "fallback"` label; keyword rules do **not** count as the real AI requirement.
-- Contact form saves messages to the database but does not email a government department. No real email/SMS notifications are implemented; citizens see updates on the portal.
-- Registration creates **citizens only**; officer and CMO accounts are provisioned by the server-side demo seed script.
-- No real Kerala government branding, authorization or production security guarantee is implied.
+Or from the local backend environment:
 
-## AI and external tools disclosure
+```bash
+python -m pytest -q
+```
 
-Source code and documentation were prepared with assistance from OpenAI ChatGPT. Open-source libraries used are specified in `requirements.txt` and `package.json`. Google Gemini (when configured) provides LLM text analysis. Neon, Render and Vercel are suggested external services and are **not pre-connected**. AI suggestions are non-binding and reviewed by citizen/CMO.
+### Latest Local Test Result
 
-## Mandatory documentation
+```text
+... [100%]
 
-All seven required documents are in [`DOCUMENTATION/`](DOCUMENTATION/), plus architecture and ER diagrams. The submission also requires a working URL, public GitHub repository and a 3–5-minute video recorded separately.
+3 passed, 1 warning in 8.45s
+```
+
+The warning is a Starlette/httpx dependency deprecation warning, not a test failure.
+
+### Validated Local Workflows
+
+- Citizen authentication.
+- Grievance submission and reference generation.
+- Gemini-based grievance classification.
+- Supporting document upload.
+- CMO review and priority management.
+- Department and officer assignment.
+- Officer investigation and status update.
+- Action-taken report submission.
+- CMO resolution approval.
+- Reference-based grievance tracking.
+- Citizen feedback after resolution.
+
+The application also includes role-based authorization and grievance history tracking.
+
+These workflows were tested locally. Deployed end-to-end validation should be completed separately.
+
+---
+
+## 14. Deployment
+
+The application is deployed using free-tier cloud services.
+
+### Frontend — Vercel
+
+**URL:**
+
+https://cm-kerala-grievance-portal-orcin.vercel.app/
+
+Configuration:
+
+```text
+Framework: Vite
+Root Directory: frontend
+Build Command: npm run build
+Output Directory: dist
+```
+
+Frontend environment variable:
+
+```dotenv
+VITE_API_URL=https://cm-kerala-api.onrender.com
+```
+
+### Backend — Render
+
+**URL:**
+
+https://cm-kerala-api.onrender.com/
+
+Configuration:
+
+```text
+Runtime: Docker
+Root Directory: backend
+Dockerfile: backend/Dockerfile
+Health Check: /
+```
+
+Render stores the backend's environment variables separately from the local `.env` file.
+
+### Database — Neon PostgreSQL
+
+The PostgreSQL database is hosted on Neon.
+
+SQLAlchemy handles ORM operations, while Alembic manages schema migrations.
+
+### CORS Configuration
+
+The Render backend should allow requests from the deployed frontend.
+
+```dotenv
+CORS_ORIGINS=http://localhost:5173,https://cm-kerala-grievance-portal-orcin.vercel.app
+```
+
+### Free-Tier Considerations
+
+- Render free services may enter a sleep state after inactivity.
+- The first backend request may have additional latency.
+- Gemini API requests are subject to provider availability and quotas.
+- Production traffic and government use would require additional infrastructure and security controls.
+
+---
+
+## 15. Security Considerations
+
+The prototype implements:
+
+- JWT-based authentication.
+- Role-based authorization.
+- Password hashing.
+- Backend request validation.
+- Restricted grievance access.
+- Controlled file retrieval.
+- Environment-based secret management.
+- Timestamped activity history.
+- Separation of public and internal remarks.
+
+### Known Limitations
+
+- Authentication tokens are stored in browser session storage.
+- File uploads are limited to 2 MB and stored in PostgreSQL.
+- Real-time email and SMS notifications are not implemented.
+- The AI service depends on external API availability.
+- The application is intended for demonstration, not production government operations.
+
+A production deployment would require stronger session management, content scanning, monitoring, auditing, and comprehensive security testing.
+
+---
+
+## 16. Technical Documentation
+
+The repository includes the following documentation under `DOCUMENTATION/`.
+
+1. [Project Overview](DOCUMENTATION/01_Project_Overview.md)
+2. [System Architecture](DOCUMENTATION/02_System_Architecture.md)
+3. [Database Design](DOCUMENTATION/03_Database_Design.md)
+4. [API Documentation](DOCUMENTATION/04_API_Documentation.md)
+5. [AI Integration](DOCUMENTATION/05_AI_Integration.md)
+6. [Setup and Testing](DOCUMENTATION/06_Setup_and_Testing.md)
+7. [User Guide](DOCUMENTATION/07_User_Guide.md)
+
+Additional diagrams:
+
+- [System Architecture Diagram](DOCUMENTATION/diagrams/system_architecture.png)
+- [Database Entity Relationship Diagram](DOCUMENTATION/diagrams/database_er.png)
+
+---
+
+## 17. Development Approach
+
+The project follows an iterative, Agile-based software development lifecycle.
+
+### Development Phases
+
+1. Requirements analysis and planning.
+2. Architecture and database design.
+3. Backend API and authentication development.
+4. Citizen and administrative workflow implementation.
+5. AI service integration.
+6. Integration testing and debugging.
+7. Docker configuration and deployment.
+8. Documentation and demonstration preparation.
+
+Development prioritized a working end-to-end grievance lifecycle over optional enhancements.
+
+---
+
+## 18. Tools and Services Used
+
+### Development Technologies
+
+- Python
+- JavaScript
+- React
+- FastAPI
+- PostgreSQL
+- SQLAlchemy
+- Alembic
+- Docker
+- Git and GitHub
+
+### Third-Party Services
+
+- Google Gemini API — AI grievance analysis.
+- Neon — PostgreSQL hosting.
+- Render — FastAPI hosting.
+- Vercel — Frontend hosting.
+
+### AI-Assisted Development
+
+OpenAI ChatGPT was used as a development assistant for planning, code generation, debugging, and documentation.
+
+The application integrates Google's Gemini API to provide AI-assisted grievance recommendations.
+
+---
+
+## 19. Future Improvements
+
+Potential enhancements include:
+
+- Email and SMS status notifications.
+- Duplicate grievance detection using semantic similarity.
+- Advanced grievance analytics.
+- File storage using private object storage.
+- Improved authentication and session management.
+- Automated integration and end-to-end tests.
+- Accessibility improvements.
+- More comprehensive audit and monitoring capabilities.
+
+These enhancements are outside the scope of the current recruitment prototype.
+
+---
+
+## 20. Project Purpose
+
+This application was developed as part of the recruitment assessment.
+
+It demonstrates practical experience in:
+
+- Full-stack web application development.
+- REST API design and integration.
+- Relational database design.
+- Authentication and authorization.
+- AI model integration.
+- Workflow automation.
+- Docker containerization.
+- Cloud deployment.
+- Software testing and technical documentation.
+
+---
+
+**Project:** CM Kerala — Public Grievance Redressal Portal
+
+**Developer:** Anagha M
+
+**Note:** This is an independent technical demonstration and is not an official Government of Kerala platform.
